@@ -1,0 +1,8 @@
+.idea
+tuodian-api
+coverage.out
+*.DS_Store
+*.twirp.go
+*.pb.go
+vendor
+rpc/**/*.md
