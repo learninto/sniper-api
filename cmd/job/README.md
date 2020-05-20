@@ -1,15 +1,19 @@
 # cmd/job
 
-注册定时任务请参考 [demo.go](./demo.go)。
+注册定时任务请参考 [main.go](./main.go)。
 
 ## 查看所有定时任务
 ```bash
 go main.go job list
+
+curl  /ListTasks
 ```
 
 ## 执行一次某个任务
 ```bash
 go main.go job once foo
+
+curl  /RunTask?name=任务名称
 ```
 
 ## 调度所有定时任务
