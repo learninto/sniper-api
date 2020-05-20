@@ -21,4 +21,7 @@ run-private:
 	go mod vendor;
 	export APP_ID=tuodianapi; go run main.go server --port=8080 --internal;
 
+run-job:
+	export APP_ID=CruiseJob; go run main.go job --port=8081;
+
 .PHONY: test rpc
