@@ -4,31 +4,23 @@ import (
 	"context"
 	"fmt"
 	"kingstar-go/sniper"
-	"kingstar-go/sniper/ctxkit"
 	"math/rand"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
-	"runtime/debug"
-	"strings"
 	"sync"
 	"syscall"
 	"time"
 
 	"kingstar-go/sniper/conf"
 	"kingstar-go/sniper/log"
-	"kingstar-go/sniper/trace"
 )
 
 var (
 	server *http.Server
 	logger = log.Get(context.Background())
 )
-
-type panicHandler struct {
-	handler http.Handler
-}
 
 // 从 http 标准库搬来的
 type tcpKeepAliveListener struct {
@@ -43,35 +35,6 @@ func (ln tcpKeepAliveListener) Accept() (net.Conn, error) {
 	_ = tc.SetKeepAlive(true)
 	_ = tc.SetKeepAlivePeriod(3 * time.Minute)
 	return tc, nil
-}
-
-func (s panicHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
-	r, span := trace.StartSpanServerHTTP(r, "ServeHTTP") // 开始链路
-	defer func() {
-		if rec := recover(); rec != nil {
-			ctx := r.Context()
-			ctx = ctxkit.WithTraceID(ctx, trace.GetTraceID(ctx))
-			logger := log.Get(ctx)
-			logger.Error(rec, string(debug.Stack()))
-		}
-		span.Finish()
-	}()
-
-	if r.Method == http.MethodOptions {
-		origin := r.Header.Get("Origin")
-		suffix := conf.GetString("CORS_ORIGIN_SUFFIX")
-
-		if suffix != "" && strings.HasSuffix(origin, suffix) {
-			w.Header().Add("Access-Control-Allow-Origin", origin)
-			w.Header().Add("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
-			w.Header().Add("Access-Control-Allow-Credentials", "true")
-			w.Header().Add("Access-Control-Allow-Headers", "Origin,No-Cache,X-Requested-With,If-Modified-Since,Pragma,Last-Modified,Cache-Control,Expires,Content-Type,Access-Control-Allow-Credentials,DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Cache-Webcdn,Content-Length")
-			return
-		}
-	}
-
-	s.handler.ServeHTTP(w, r)
 }
 
 func main() {
@@ -123,10 +86,11 @@ func startServer() {
 		}
 	}
 
-	handler := http.TimeoutHandler(panicHandler{handler: mux}, timeout, "timeout")
+	panicHandler := sniper.PanicHandler{Handler: mux}
+	handler := http.TimeoutHandler(panicHandler, timeout, "timeout")
 	http.Handle("/", handler)
 
-	sniper.HandleFunc("/metrics")
+	sniper.PrometheusHandleFunc("/metrics")
 	sniper.Ping("/monitor/ping")
 
 	addr := fmt.Sprintf(":%d", port)
