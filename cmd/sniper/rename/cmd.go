@@ -15,7 +15,7 @@ var rootPkg string
 func init() {
 	Cmd.Flags().StringVar(&rootPkg, "package", "", "项目总包名")
 
-	_ = Cmd.MarkFlagRequired("package")
+	Cmd.MarkFlagRequired("package")
 }
 
 func getModuleName() string {
@@ -57,7 +57,7 @@ var Cmd = &cobra.Command{
 		c1.Stdin = strings.NewReader(sh)
 		c1.Stdout = os.Stdout
 		c1.Stderr = os.Stderr
-		_ = c1.Run()
+		c1.Run()
 
 		sh = fmt.Sprintf(`sed -i '' 's#module %s#module %s#' go.mod`, module, rootPkg)
 
@@ -65,6 +65,6 @@ var Cmd = &cobra.Command{
 		c2.Stdin = strings.NewReader(sh)
 		c2.Stdout = os.Stdout
 		c2.Stderr = os.Stderr
-		_ = c2.Run()
+		c2.Run()
 	},
 }

@@ -3,10 +3,12 @@ module sniper-api
 go 1.14
 
 require (
-	github.com/bilibili/twirp v0.0.0-20200305140827-a09be7e42ab8
-	github.com/golang/protobuf v1.3.5 // indirect
+	github.com/bilibili/twirp v0.0.0-20200513112506-b854eb103b5b
+	github.com/dave/dst v0.25.5
+	github.com/golang/protobuf v1.4.2
 	github.com/spf13/cobra v0.0.5
-	kingstar-go/commons v0.0.0
+	google.golang.org/protobuf v1.24.0
+	kingstar-go/commons v0.0.0 // indirect
 	kingstar-go/sniper v0.0.0
 )
 

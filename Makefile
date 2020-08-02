@@ -8,7 +8,7 @@ rename:
 	go run cmd/sniper/main.go rename  --package $(name)
 
 rpc:
-	find rpc -name '*.proto' -exec protoc --twirp_out=. --go_out=. {} \;
+	find rpc -name '*.proto' -exec protoc --twirp_out=option_prefix=demo:. --go_out=. {} \;
 
 doc:
 	find rpc -name '*.proto' -exec protoc --markdown_out=. --go_out=. {} \;
