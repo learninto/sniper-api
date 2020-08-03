@@ -8,10 +8,7 @@ require (
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/spf13/cobra v0.0.5
 	google.golang.org/protobuf v1.24.0 // indirect
-	kingstar-go/commons v0.0.0 // indirect
 	kingstar-go/sniper v0.0.0
 )
-
-replace kingstar-go/commons => ./../kingstar-go/commons
 
 replace kingstar-go/sniper => ./../kingstar-go/sniper
