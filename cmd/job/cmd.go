@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"kingstar-go/sniper"
 	httpD "net/http"
 	"os"
 	"os/signal"
@@ -14,7 +15,8 @@ import (
 	"syscall"
 	"time"
 
-	"kingstar-go/sniper"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"kingstar-go/sniper/conf"
 	"kingstar-go/sniper/ctxkit"
 	"kingstar-go/sniper/log"
@@ -23,17 +25,19 @@ import (
 
 	"kingstar-go/sniper/crond"
 
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/spf13/cobra"
 )
 
 type jobInfo struct {
-	Name string `json:"name"`
-	Spec string `json:"spec"`
-	job  func(ctx context.Context) error
+	Name  string   `json:"name"`
+	Spec  string   `json:"spec"`
+	Tasks []string `json:"tasks"`
+	job   func(ctx context.Context) error
 }
 
 func (j *jobInfo) Run() {
-	_ = j.job(context.Background())
+	j.job(context.Background())
 }
 
 var c = crond.New()
@@ -57,12 +61,16 @@ If you run job cmd WITHOUT any sub cmd, job will be sheduled like cron.`,
 		// 不指定 handler 则会使用默认 handler
 		server := &httpD.Server{Addr: fmt.Sprintf(":%d", port)}
 		go func() {
-			sniper.PrometheusHandleFunc("/metrics")
-			sniper.Ping("/monitor/ping")
+			metricsHandler := promhttp.Handler()
+			httpD.HandleFunc("/metrics", func(w httpD.ResponseWriter, r *httpD.Request) {
+				sniper.GatherMetrics()
+
+				metricsHandler.ServeHTTP(w, r)
+			})
 
 			httpD.HandleFunc("/ListTasks", func(w httpD.ResponseWriter, r *httpD.Request) {
 				ctx := context.Background()
-				span, ctx := trace.StartSpanFromContext(ctx, "ListTasks")
+				span, ctx := opentracing.StartSpanFromContext(ctx, "ListTasks")
 				defer span.Finish()
 
 				w.Header().Set("x-trace-id", trace.GetTraceID(ctx))
@@ -80,7 +88,7 @@ If you run job cmd WITHOUT any sub cmd, job will be sheduled like cron.`,
 
 			httpD.HandleFunc("/RunTask", func(w httpD.ResponseWriter, r *httpD.Request) {
 				ctx := context.Background()
-				span, ctx := trace.StartSpanFromContext(ctx, "RunTask")
+				span, ctx := opentracing.StartSpanFromContext(ctx, "RunTask")
 				defer span.Finish()
 
 				w.Header().Set("x-trace-id", trace.GetTraceID(ctx))
@@ -89,17 +97,21 @@ If you run job cmd WITHOUT any sub cmd, job will be sheduled like cron.`,
 				job, ok := httpJobs[name]
 				if !ok {
 					w.WriteHeader(httpD.StatusNotFound)
-					w.Write([]byte("job " + name + " not found\n"))
+					_, _ = w.Write([]byte("job " + name + " not found\n"))
 					return
 				}
 
 				if err := job.job(ctx); err != nil {
 					w.WriteHeader(httpD.StatusInternalServerError)
-					w.Write([]byte(fmt.Sprintf("%+v", err)))
+					_, _ = w.Write([]byte(fmt.Sprintf("%+v", err)))
 					return
 				}
 
 				_, _ = w.Write([]byte("run job " + name + " done\n"))
+			})
+
+			httpD.HandleFunc("/monitor/ping", func(w httpD.ResponseWriter, r *httpD.Request) {
+				_, _ = w.Write([]byte("pong"))
 			})
 
 			if err := server.ListenAndServe(); err != nil {
@@ -146,6 +158,9 @@ var cmdList = &cobra.Command{
 		for k, v := range jobs {
 			fmt.Printf("%s [%s]\n", k, v.Spec)
 		}
+		for k, v := range httpJobs {
+			fmt.Printf("%s [%s]\n", k, v.Spec)
+		}
 	},
 }
 
@@ -185,7 +200,7 @@ func init() {
 
 // http 注册的任务需要 http 触发
 // spec 采用 unix crontab 语法，不支持秒!!!
-func http(name string, spec string, job func(ctx context.Context) error) {
+func http(name string, spec string, job func(ctx context.Context) error, args ...string) {
 	if _, ok := httpJobs[name]; ok {
 		panic(name + "is used")
 	}
@@ -206,7 +221,7 @@ func http(name string, spec string, job func(ctx context.Context) error) {
 		schedule = spec
 	}
 
-	httpJobs[name] = regJob(name, schedule, job)
+	httpJobs[name] = regjob(name, schedule, job, args)
 	return
 }
 
@@ -216,7 +231,7 @@ func cron(name string, spec string, job func(ctx context.Context) error) {
 		panic(name + " is used")
 	}
 
-	j := regJob(name, spec, job)
+	j := regjob(name, spec, job, []string{})
 	jobs[name] = j
 
 	if spec == "@manual" {
@@ -232,9 +247,9 @@ func manual(name string, job func(ctx context.Context) error) {
 	cron(name, "@manual", job)
 }
 
-func regJob(name string, spec string, job func(ctx context.Context) error) (ji *jobInfo) {
+func regjob(name string, spec string, job func(ctx context.Context) error, tasks []string) (ji *jobInfo) {
 	j := func(ctx context.Context) (err error) {
-		span, ctx := trace.StartSpanFromContext(ctx, "Cron")
+		span, ctx := opentracing.StartSpanFromContext(ctx, "Cron")
 		defer span.Finish()
 
 		span.SetTag("name", name)
@@ -268,7 +283,7 @@ func regJob(name string, spec string, job func(ctx context.Context) error) (ji *
 		return
 	}
 
-	ji = &jobInfo{Name: name, Spec: spec, job: j}
+	ji = &jobInfo{Name: name, Spec: spec, job: j, Tasks: tasks}
 	return
 }
 
