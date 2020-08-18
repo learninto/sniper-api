@@ -5,7 +5,7 @@ import (
 	twirphook "kingstar-go/sniper/twirp_hook"
 	"net/http"
 
-	"github.com/bilibili/twirp"
+	"kingstar-go/sniper/twirp"
 )
 
 var hooks = twirp.ChainHooks(

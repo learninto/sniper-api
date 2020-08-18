@@ -88,7 +88,11 @@ func startServer() {
 
 	panicHandler := sniper.PanicHandler{Handler: mux}
 	handler := http.TimeoutHandler(panicHandler, timeout, "timeout")
-	http.Handle("/", handler)
+	prefix := conf.Get("RPC_PREFIX")
+	if prefix == "" {
+		prefix = "/api"
+	}
+	http.Handle("/", http.StripPrefix(prefix, handler))
 
 	sniper.PrometheusHandleFunc("/metrics")
 	sniper.Ping("/monitor/ping")
