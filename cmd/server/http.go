@@ -1,7 +1,6 @@
 package server
 
 import (
-	"kingstar-go/sniper/trace"
 	twirphook "kingstar-go/sniper/twirp_hook"
 	"net/http"
 
@@ -10,13 +9,13 @@ import (
 
 var hooks = twirp.ChainHooks(
 	twirphook.NewHeaders(),
-	trace.NewRequestID(),
+	twirphook.NewRequestID(),
 	twirphook.NewLog(),
 )
 
 var loginHooks = twirp.ChainHooks(
 	twirphook.NewHeaders(),
-	trace.NewRequestID(),
+	twirphook.NewRequestID(),
 	twirphook.NewLog(),
 	twirphook.NewCheckLogin(),
 )
