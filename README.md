@@ -8,15 +8,16 @@
 4. [protoc-gen-go](https://github.com/golang/protobuf/tree/master/protoc-gen-go)
 
 ## 初始化环境
+
 ```shell script
 brew install protobuf
 go mod download
 go mod vendor
 go get -u github.com/golang/protobuf/protoc-gen-go
-go get -u github.com/bilibili/twirp/protoc-gen-twirp
 ```
 
 ## 目录结构
+
 ```
 ├── cmd         # 服务子命令
 ├── dao         # 数据访问层
@@ -29,6 +30,7 @@ go get -u github.com/bilibili/twirp/protoc-gen-twirp
 ```
 
 ## 快速入门
+
 - [定义接口](./rpc/README.md)
 - [实现接口](./server/README.md)
 - [注册服务](./cmd/server/README.md)
@@ -37,10 +39,11 @@ go get -u github.com/bilibili/twirp/protoc-gen-twirp
 - [日志系统](./util/log/README.md)
 - [数据库](./util/db/README.md)
 - [redis](./util/redis/README.md)
-- [metrics](./util/metrics/README.md)
-- [tracing](./util/trace/README.md)
+- [指标监控](./util/metrics/README.md)
+- [链路追踪](./util/trace/README.md)
 
 ## 框架依赖项
+
 - [框架依赖](./go.mod)
 
 ## 批量修改文件内容
