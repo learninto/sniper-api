@@ -291,7 +291,7 @@ func (t *twirp) generateImports(file *descriptor.FileDescriptorProto) {
 	t.P()
 	t.P(`import `, t.pkgs["jsonpb"], ` "github.com/golang/protobuf/jsonpb"`)
 	t.P(`import `, t.pkgs["proto"], ` "github.com/golang/protobuf/proto"`)
-	t.P(`import `, t.pkgs["twirp"], ` "sniper/util/twirp"`)
+	t.P(`import `, t.pkgs["twirp"], ` "kingstar-go/sniper/twirp"`)
 	t.P()
 
 	// It's legal to import a message and use it as an input or output for a
