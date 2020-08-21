@@ -2,10 +2,13 @@ package rpc
 
 var serverTpl = `
 package {{.ServerPkg}}
+
 import (
 	"context"
+
 	pb "{{.RPCPkg}}"
 )
+
 type {{.Service}}Server struct{}
 `
 
@@ -44,9 +47,11 @@ import(
 func initNewTpl() {
 	serverTpl = `
 package {{.Server}}_v{{.Version}}
+
 import (
 	"context"
 )
+
 type {{.Service}}Server struct{}
 `
 
