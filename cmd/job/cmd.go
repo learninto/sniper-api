@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"kingstar-go/sniper"
 	httpD "net/http"
 	"os"
 	"os/signal"
 	"runtime/debug"
+	"github.com/learninto/sniper-api/utils"
 	"strings"
 	"sync"
 	"syscall"
@@ -17,13 +17,13 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"kingstar-go/sniper/conf"
-	"kingstar-go/sniper/ctxkit"
-	"kingstar-go/sniper/log"
-	"kingstar-go/sniper/metrics"
-	"kingstar-go/sniper/trace"
+	"github.com/learninto/sniper-api/utils/conf"
+	"github.com/learninto/sniper-api/utils/ctxkit"
+	"github.com/learninto/sniper-api/utils/log"
+	"github.com/learninto/sniper-api/utils/metrics"
+	"github.com/learninto/sniper-api/utils/trace"
 
-	"kingstar-go/sniper/crond"
+	"github.com/learninto/sniper-api/utils/crond"
 
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/spf13/cobra"
@@ -63,7 +63,7 @@ If you run job cmd WITHOUT any sub cmd, job will be sheduled like cron.`,
 		go func() {
 			metricsHandler := promhttp.Handler()
 			httpD.HandleFunc("/metrics", func(w httpD.ResponseWriter, r *httpD.Request) {
-				sniper.GatherMetrics()
+				utils.GatherMetrics()
 
 				metricsHandler.ServeHTTP(w, r)
 			})
@@ -120,7 +120,7 @@ If you run job cmd WITHOUT any sub cmd, job will be sheduled like cron.`,
 		}()
 
 		go func() {
-			conf.OnConfigChange(func() { sniper.Reset() })
+			conf.OnConfigChange(func() { utils.Reset() })
 			conf.WatchConfig()
 
 			c.Run()
@@ -165,8 +165,8 @@ var cmdList = &cobra.Command{
 }
 
 // once 命令参数，可以在 cron 中使用
-// sniper job once foo bar 则 onceArgs = []string{"bar"}
-// sniper job once foo 1 2 3 则 onceArgs = []string{"1", "2", "3"}
+// utils job once foo bar 则 onceArgs = []string{"bar"}
+// utils job once foo 1 2 3 则 onceArgs = []string{"1", "2", "3"}
 var onceArgs []string
 var onceHttpJob bool
 

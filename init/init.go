@@ -1,10 +1,10 @@
 package init
 
 import (
-	"kingstar-go/sniper/conf"
-	"kingstar-go/sniper/metrics"
+	"github.com/learninto/sniper-api/utils/conf"
+	"github.com/learninto/sniper-api/utils/metrics"
 
-	_ "kingstar-go/sniper/init"
+	_ "github.com/learninto/sniper-api/utils/init"
 )
 
 func init() {

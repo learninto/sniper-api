@@ -1,10 +1,11 @@
 package server
 
 import (
-	twirphook "kingstar-go/sniper/twirp_hook"
 	"net/http"
 
-	"kingstar-go/sniper/twirp"
+	twirphook "github.com/learninto/sniper-api/utils/twirp_hook"
+
+	"github.com/learninto/sniper-api/utils/twirp"
 )
 
 var hooks = twirp.ChainHooks(

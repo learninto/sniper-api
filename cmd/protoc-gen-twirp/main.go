@@ -33,7 +33,7 @@ func main() {
 
 	var flags flag.FlagSet
 
-	flags.StringVar(&g.OptionPrefix, "option_prefix", "sniper", "")
+	flags.StringVar(&g.OptionPrefix, "option_prefix", "utils", "")
 
 	protogen.Options{
 		ParamFunc: flags.Set,

@@ -30,7 +30,7 @@ func getModuleName() string {
 		panic(err)
 	}
 	fields := strings.Fields(l)
-	module := "sniper"
+	module := "utils"
 	if len(fields) == 2 {
 		module = fields[1]
 	}
@@ -42,7 +42,7 @@ func getModuleName() string {
 var Cmd = &cobra.Command{
 	Use:   "rename",
 	Short: "重命名项目总包名",
-	Long:  `默认包名为 sniper 可以按需修改`,
+	Long:  `默认包名为 utils 可以按需修改`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if rootPkg == "" {
 			panic("package cannot be empty")
@@ -72,7 +72,7 @@ var Cmd = &cobra.Command{
 		}
 
 		{
-			sh := fmt.Sprintf(`sed -i '' 's#"sniper"#"%s"#' util/conf/conf.go && mv sniper.toml %s.toml`, rootPkg, rootPkg)
+			sh := fmt.Sprintf(`sed -i '' 's#"utils"#"%s"#' util/conf/conf.go && mv utils.toml %s.toml`, rootPkg, rootPkg)
 
 			c := exec.Command("bash")
 			c.Stdin = strings.NewReader(sh)

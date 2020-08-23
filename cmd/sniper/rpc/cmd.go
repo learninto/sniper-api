@@ -59,7 +59,7 @@ func getModuleName(wd string) (module string) {
 	}
 	fields := strings.Fields(l)
 
-	module = "sniper"
+	module = "utils"
 	if len(fields) == 2 {
 		module = fields[1]
 	}
