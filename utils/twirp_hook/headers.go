@@ -3,10 +3,10 @@ package twirp_hook
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/learninto/sniper-api/utils/ctxkit"
 	"github.com/learninto/sniper-api/utils/jwt"
 	"github.com/learninto/sniper-api/utils/log"
-
 	"github.com/learninto/sniper-api/utils/twirp"
 )
 
@@ -27,15 +27,14 @@ func NewHeaders() *twirp.ServerHooks {
 	}
 	return &twirp.ServerHooks{
 		RequestRouted: func(ctx context.Context) (context.Context, error) {
-			req, _ := twirp.Request(ctx)
-			logger := log.Get(ctx)
+			req, _ := twirp.HttpRequest(ctx)
 
 			u := user{}
 
 			if c, err := jwt.NewJWT().ParseToken(req.Header.Get("Sign")); err == nil {
 				_ = json.Unmarshal(c.Data, &u)
 			} else {
-				logger.Error("jwt解密 Error", err)
+				log.Get(ctx).Error("jwt解密 Error", err)
 			}
 
 			ctx = ctxkit.WithUserID(ctx, u.ID)                   // 注入用户id

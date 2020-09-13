@@ -9,11 +9,12 @@ import (
 	"os"
 	"os/signal"
 	"runtime/debug"
-	"github.com/learninto/sniper-api/utils"
 	"strings"
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/learninto/sniper-api/utils"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 

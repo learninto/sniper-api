@@ -3,11 +3,12 @@ package utils
 import (
 	"net/http"
 	"runtime/debug"
+	"strings"
+
 	"github.com/learninto/sniper-api/utils/conf"
 	"github.com/learninto/sniper-api/utils/ctxkit"
 	"github.com/learninto/sniper-api/utils/mc"
 	"github.com/learninto/sniper-api/utils/trace"
-	"strings"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 

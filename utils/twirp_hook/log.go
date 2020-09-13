@@ -41,7 +41,7 @@ func NewLog() *twirp.ServerHooks {
 			defer span.Finish()
 
 			status, _ := twirp.StatusCode(ctx)
-			req, _ := twirp.Request(ctx)
+			req, _ := twirp.HttpRequest(ctx)
 			resp, _ := twirp.Response(ctx)
 
 			var bizCode int32

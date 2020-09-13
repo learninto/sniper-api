@@ -64,6 +64,7 @@ func main() {
 	}
 }
 
+// startServer
 func startServer() {
 	logger.Info("start server")
 
@@ -98,9 +99,7 @@ func startServer() {
 	utils.Ping("/monitor/ping")
 
 	addr := fmt.Sprintf(":%d", port)
-	server = &http.Server{
-		IdleTimeout: 60 * time.Second,
-	}
+	server = &http.Server{IdleTimeout: 60 * time.Second}
 
 	// 配置下发可能会多次触发重启，必须等待 Listen() 调用成功
 	var wg sync.WaitGroup
@@ -123,6 +122,7 @@ func startServer() {
 	wg.Wait()
 }
 
+// stopServer
 func stopServer() {
 	logger.Info("stop server")
 
