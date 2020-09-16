@@ -1,4 +1,6 @@
 # API
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flearninto%2Fsniper-api.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Flearninto%2Fsniper-api?ref=badge_shield)
+
 
 ## 系统要求
 
@@ -48,3 +50,6 @@ go get -u github.com/golang/protobuf/protoc-gen-go
 
 ## 批量修改文件内容
 grep -rl "检索内容" --include="*" ./ | xargs sed -i "" "s/检索内容/修改后内容/g"
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flearninto%2Fsniper-api.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Flearninto%2Fsniper-api?ref=badge_large)
