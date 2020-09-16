@@ -8,7 +8,7 @@
 框架支持自动打印错误日志，使用方法:
 
 ```go
-import "github.com/learninto/sniper-api/utils/errors"
+import "github.com/learninto/goutil/errors"
 
 // ...
 

@@ -198,7 +198,7 @@ func (t *twirp) generateImports(file *protogen.File) {
 	t.P()
 	t.P(`import `, t.pkgs["jsonpb"], ` "github.com/golang/protobuf/jsonpb"`)
 	t.P(`import `, t.pkgs["proto"], ` "github.com/golang/protobuf/proto"`)
-	t.P(`import `, t.pkgs["ctxkit"], ` "github.com/learninto/sniper-api/utils/ctxkit"`)
+	t.P(`import `, t.pkgs["ctxkit"], ` "github.com/learninto/goutil/ctxkit"`)
 	t.P(`import `, t.pkgs["twirp"], fmt.Sprintf(` "%s"`, t.TwirpPackage))
 	t.P()
 

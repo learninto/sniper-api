@@ -1,10 +1,10 @@
 package init
 
 import (
-	"github.com/learninto/sniper-api/utils/conf"
-	"github.com/learninto/sniper-api/utils/metrics"
+	"github.com/learninto/goutil/conf"
+	"github.com/learninto/goutil/metrics"
 
-	_ "github.com/learninto/sniper-api/utils/init"
+	_ "github.com/learninto/goutil/init"
 )
 
 func init() {

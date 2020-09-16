@@ -14,17 +14,17 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/learninto/sniper-api/utils"
+	"github.com/learninto/goutil"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"github.com/learninto/sniper-api/utils/conf"
-	"github.com/learninto/sniper-api/utils/ctxkit"
-	"github.com/learninto/sniper-api/utils/log"
-	"github.com/learninto/sniper-api/utils/metrics"
-	"github.com/learninto/sniper-api/utils/trace"
+	"github.com/learninto/goutil/conf"
+	"github.com/learninto/goutil/ctxkit"
+	"github.com/learninto/goutil/log"
+	"github.com/learninto/goutil/metrics"
+	"github.com/learninto/goutil/trace"
 
-	"github.com/learninto/sniper-api/utils/crond"
+	"github.com/learninto/goutil/crond"
 
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/spf13/cobra"

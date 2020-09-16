@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	root := cobra.Command{Use: "utils-go"}
+	root := cobra.Command{Use: "sniper-api"}
 
 	root.AddCommand(
 		server.Cmd,

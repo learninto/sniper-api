@@ -12,9 +12,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/learninto/sniper-api/utils"
-	"github.com/learninto/sniper-api/utils/conf"
-	"github.com/learninto/sniper-api/utils/log"
+	"github.com/learninto/goutil"
+	"github.com/learninto/goutil/conf"
+	"github.com/learninto/goutil/log"
 )
 
 var (
