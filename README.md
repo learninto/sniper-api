@@ -14,6 +14,7 @@ brew install protobuf
 go mod download
 go mod vendor
 go get -u github.com/golang/protobuf/protoc-gen-go
+GO111MODULE=on GOPROXY=https://goproxy.cn/,direct go get -u github.com/learninto/sniper-api/cmd/protoc-gen-twirp
 ```
 
 ## 目录结构
