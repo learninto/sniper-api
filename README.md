@@ -35,12 +35,12 @@ go get -u github.com/golang/protobuf/protoc-gen-go
 - [实现接口](./server/README.md)
 - [注册服务](./cmd/server/README.md)
 - [启动服务](./cmd/server/README.md)
-- [配置文件](util/conf/README.md)
-- [日志系统](./util/log/README.md)
-- [数据库](./util/db/README.md)
-- [redis](./util/redis/README.md)
-- [指标监控](./util/metrics/README.md)
-- [链路追踪](./util/trace/README.md)
+- [配置文件](https://github.com/learninto/goutil/conf/README.md)
+- [日志系统](https://github.com/learninto/goutil/log/README.md)
+- [数据库](https://github.com/learninto/goutil/db/README.md)
+- [redis](https://github.com/learninto/goutil/redis/README.md)
+- [指标监控](https://github.com/learninto/goutil/metrics/README.md)
+- [链路追踪](https://github.com/learninto/goutil/trace/README.md)
 
 ## 框架依赖项
 
