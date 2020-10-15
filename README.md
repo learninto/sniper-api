@@ -17,6 +17,16 @@ go get -u github.com/golang/protobuf/protoc-gen-go
 GO111MODULE=on GOPROXY=https://goproxy.cn/,direct go get -u github.com/learninto/sniper-api/cmd/protoc-gen-twirp
 ```
 
+## 文档生成
+
+```
+第一步：安装文档生成器：
+go get -u github.com/learninto/protoc-gen-markdown
+
+第二步：在项目根目录下执行：
+find rpc -name '*.proto' -exec protoc --markdown_out=. --go_out=. {} \;
+```
+
 ## 目录结构
 
 ```
@@ -42,6 +52,7 @@ GO111MODULE=on GOPROXY=https://goproxy.cn/,direct go get -u github.com/learninto
 - [redis](https://github.com/learninto/goutil/redis/README.md)
 - [指标监控](https://github.com/learninto/goutil/metrics/README.md)
 - [链路追踪](https://github.com/learninto/goutil/trace/README.md)
+- [高性能JSON处理](https://github.com/learninto/goutil/blob/master/xjson/json_test.go)
 
 ## 框架依赖项
 
