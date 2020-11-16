@@ -35,6 +35,7 @@ func main() {
 
 	flags.StringVar(&g.OptionPrefix, "option_prefix", "sniper", "")
 	flags.StringVar(&g.TwirpPackage, "twirp_package", "github.com/learninto/goutil/twirp", "")
+	flags.BoolVar(&g.ValidateEnable, "validate_enable", false, "")
 
 	protogen.Options{
 		ParamFunc: flags.Set,

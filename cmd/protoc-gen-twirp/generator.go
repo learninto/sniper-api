@@ -48,6 +48,8 @@ type twirp struct {
 	// 默认为 sniper/util/twirp，用户可以使用 twirp_package 定制
 	// 如果修改过项目的默认包名(sniper)则一定需要指定
 	TwirpPackage string
+	// 是否开启 validate
+	ValidateEnable bool
 
 	filesHandled int
 
@@ -127,7 +129,9 @@ func (t *twirp) Generate(plugin *protogen.Plugin) error {
 		}
 
 		t.generate(f)
-		t.generateValidate(f)
+		if t.ValidateEnable {
+			t.generateValidate(f)
+		}
 		t.filesHandled++
 	}
 
@@ -478,16 +482,16 @@ func (t *twirp) generateServerMethod(file *protogen.File, service *protogen.Serv
 	t.P(`  }`)
 	t.P(`}`)
 	t.P()
-	t.generateServerJSONMethod(service, method, file)
-	t.generateServerProtobufMethod(service, method, file)
-	t.generateServerFormMethod(service, method, file)
+	t.generateServerJSONMethod(service, method)
+	t.generateServerProtobufMethod(service, method)
+	t.generateServerFormMethod(service, method)
 }
 
-func (t *twirp) needLogin(method *protogen.Method) bool {
-	return strings.Contains(string(method.Comments.Leading), "@auth\n")
+func (t *twirp) needLogin(method *protogen.Method, service *protogen.Service) bool {
+	return strings.Contains(string(method.Comments.Leading), "@auth\n") || strings.Contains(string(service.Comments.Leading), "@auth\n")
 }
 
-func (t *twirp) generateServerJSONMethod(service *protogen.Service, method *protogen.Method, file *protogen.File) {
+func (t *twirp) generateServerJSONMethod(service *protogen.Service, method *protogen.Method) {
 	servStruct := serviceStruct(service)
 	methName := method.GoName
 	servName := service.GoName
@@ -511,18 +515,7 @@ func (t *twirp) generateServerJSONMethod(service *protogen.Service, method *prot
 	t.P(`  }`)
 	t.P()
 	t.P(`  ctx = twirp.WithRequest(ctx, reqContent)`)
-	t.P(`  if  validerr := reqContent.validate(); validerr != nil {`)
-	t.P(`    s.writeError(ctx, resp, twirp.InvalidArgumentError("argument", validerr.Error()))`)
-	t.P(`    return`)
-	t.P(`  }`)
-	t.P()
-	if t.needLogin(method) {
-		t.P(`  if ctxkit.GetUserID(ctx) == 0 {`)
-		t.P(`    s.writeError(ctx, resp, twirp.NewError(twirp.Unauthenticated, "unauthenticated"))`)
-		t.P(`    return`)
-		t.P(`  }`)
-		t.P()
-	}
+	t.addValidate(method, service)
 	t.P(`  // Call service method`)
 	t.P(`  var respContent *`, t.getType(method.Output))
 	t.P(`  func() {`)
@@ -592,7 +585,7 @@ func (t *twirp) generateServerJSONMethod(service *protogen.Service, method *prot
 	t.P()
 }
 
-func (t *twirp) generateServerFormMethod(service *protogen.Service, method *protogen.Method, file *protogen.File) {
+func (t *twirp) generateServerFormMethod(service *protogen.Service, method *protogen.Method) {
 	servStruct := serviceStruct(service)
 	methName := method.GoName
 	t.P(`func (s *`, servStruct, `) serve`, methName, `Form(ctx `, t.pkgs["context"], `.Context, resp `, t.pkgs["http"], `.ResponseWriter, req *`, t.pkgs["http"], `.Request) {`)
@@ -612,18 +605,6 @@ func (t *twirp) generateServerFormMethod(service *protogen.Service, method *prot
 	t.P()
 	t.P(`  reqContent := new(`, t.getType(method.Input), `)`)
 	t.P()
-	t.P(`  if  validerr := reqContent.validate(); validerr != nil {`)
-	t.P(`    s.writeError(ctx, resp, twirp.InvalidArgumentError("argument", validerr.Error()))`)
-	t.P(`    return`)
-	t.P(`  }`)
-	t.P()
-	if t.needLogin(method) {
-		t.P(`  if ctxkit.GetUserID(ctx) == 0 {`)
-		t.P(`    s.writeError(ctx, resp, twirp.NewError(twirp.Unauthenticated, "unauthenticated"))`)
-		t.P(`    return`)
-		t.P(`  }`)
-		t.P()
-	}
 
 	for _, field := range method.Input.Fields {
 		ft, fs := getFieldType(field.Desc.Kind())
@@ -679,6 +660,7 @@ func (t *twirp) generateServerFormMethod(service *protogen.Service, method *prot
 	}
 	t.P(`  ctx = twirp.WithRequest(ctx, reqContent)`)
 	t.P()
+	t.addValidate(method, service)
 
 	t.P()
 	t.P(`  // Call service method`)
@@ -750,7 +732,7 @@ func (t *twirp) generateServerFormMethod(service *protogen.Service, method *prot
 	t.P()
 }
 
-func (t *twirp) generateServerProtobufMethod(service *protogen.Service, method *protogen.Method, file *protogen.File) {
+func (t *twirp) generateServerProtobufMethod(service *protogen.Service, method *protogen.Method) {
 	servStruct := serviceStruct(service)
 	methName := method.GoName
 	servName := service.GoName
@@ -779,18 +761,7 @@ func (t *twirp) generateServerProtobufMethod(service *protogen.Service, method *
 	t.P(`  }`)
 	t.P()
 	t.P(`  ctx = twirp.WithRequest(ctx, reqContent)`)
-	t.P(`  if  validerr := reqContent.validate(); validerr != nil {`)
-	t.P(`    s.writeError(ctx, resp, twirp.InvalidArgumentError("argument", validerr.Error()))`)
-	t.P(`    return`)
-	t.P(`  }`)
-	t.P()
-	if t.needLogin(method) {
-		t.P(`  if ctxkit.GetUserID(ctx) == 0 {`)
-		t.P(`    s.writeError(ctx, resp, twirp.NewError(twirp.Unauthenticated, "unauthenticated"))`)
-		t.P(`    return`)
-		t.P(`  }`)
-		t.P()
-	}
+	t.addValidate(method, service)
 	t.P(`  // Call service method`)
 	t.P(`  var respContent *`, t.getType(method.Output))
 	t.P(`  func() {`)
@@ -969,4 +940,21 @@ func exported(s string) string { return strings.ToUpper(s[:1]) + s[1:] }
 
 func serviceStruct(service *protogen.Service) string {
 	return unexported(service.GoName) + "Server"
+}
+
+func (t *twirp) addValidate(method *protogen.Method, service *protogen.Service) {
+	if t.ValidateEnable {
+		t.P(`  if  validerr := reqContent.validate(); validerr != nil {`)
+		t.P(`    s.writeError(ctx, resp, twirp.InvalidArgumentError("argument", validerr.Error()))`)
+		t.P(`    return`)
+		t.P(`  }`)
+		t.P()
+		if t.needLogin(method, service) {
+			t.P(`  if ctxkit.GetUserID(ctx) == 0 {`)
+			t.P(`    s.writeError(ctx, resp, twirp.NewError(twirp.Unauthenticated, "need login"))`)
+			t.P(`    return`)
+			t.P(`  }`)
+			t.P()
+		}
+	}
 }

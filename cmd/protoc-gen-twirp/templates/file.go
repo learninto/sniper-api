@@ -5,6 +5,8 @@ package {{ pkg . }}
 
 import (
 	"fmt"
+	"net"
+	"net/url"
 	"regexp"
 	"strings"
 	"unicode/utf8"
@@ -16,6 +18,8 @@ var (
 	_ = utf8.UTFMax
 	_ = (*regexp.Regexp)(nil)
 	_ = (*strings.Reader)(nil)
+	_ = net.IPv4len
+	_ = (*url.URL)(nil)
 )
 
 {{ range .Messages }}

@@ -11,12 +11,6 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-// in/not_in 内容规则匹配
-const slicePreifx = `^\[(.*)\]$`
-
-// 需要登陆
-const needLogin = "needLogin"
-
 // 类型
 const float32Typ = "float32"
 const float64Typ = "float64"
@@ -25,11 +19,10 @@ const int64Typ = "int64"
 const uint32Typ = "uint32"
 const uint64Typ = "uint64"
 const stringTyp = "string"
-const repeatedTyp = "repeated"
 const boolTyp = "bool"
 const enumTyp = "enum"
 const byteTyp = "byte"
-const messageType = "message"
+const messageTyp = "message"
 
 // 规则
 const eqTyp = "eq"
@@ -49,7 +42,9 @@ const containsTyp = "contains"
 const notContainsTyp = "not_contains"
 const minItemsTyp = "min_items"
 const maxItemsTyp = "max_items"
-const uniqueTpe = "unique"
+const uniqueTyp = "unique"
+const typeTyp = "type"
+const rangeTyp = "range"
 
 var tienum = map[string]string{
 	eqTyp:          eqTpl,
@@ -69,7 +64,9 @@ var tienum = map[string]string{
 	notContainsTyp: notContainsTpl,
 	minItemsTyp:    minItemsTpl,
 	maxItemsTyp:    maxItemsTpl,
-	uniqueTpe:      uniqueTpl,
+	uniqueTyp:      uniqueTpl,
+	typeTyp:        typeTpl,
+	rangeTyp:       rangeTpl,
 }
 
 // TemplateInfo 用以生成最终的 rule 模版
@@ -88,15 +85,16 @@ type Rule struct {
 // RegisterFunctions 注册方法
 func RegisterFunctions(tpl *template.Template) {
 	tpl.Funcs(map[string]interface{}{
-		"msgTyp":   msgTyp,
-		"errname":  errName,
-		"pkg":      pkgName,
-		"slice":    slicefunc,
-		"accessor": accessor,
-		"escape":   escape,
-		"goType":   protoTypeToGoType,
-		"validate": validatefunc,
-		"message":  messagefunc,
+		"msgTyp":    msgTyp,
+		"errname":   errName,
+		"pkg":       pkgName,
+		"slice":     slicefunc,
+		"accessor":  accessor,
+		"escape":    escape,
+		"goType":    protoTypeToGoType,
+		"rangeRule": rangeRulefunc,
+		"validate":  validatefunc,
+		"message":   messagefunc,
 	})
 }
 
@@ -117,7 +115,7 @@ func pkgName(file protogen.File) string {
 
 // slicefunc [1,2,3] 解析成数组
 func slicefunc(s string) (r []string) {
-	re := regexp.MustCompile(slicePreifx)
+	re := regexp.MustCompile(`^\[(.*)\]$`)
 	matched := re.FindStringSubmatch(s)
 
 	if len(matched) <= 1 {
@@ -176,12 +174,35 @@ func protoTypeToGoType(kind protoreflect.Kind) (typ string) {
 	case protoreflect.BytesKind:
 		return byteTyp
 	case protoreflect.MessageKind:
-		return messageType
+		return messageTyp
 	case protoreflect.GroupKind:
 		return ""
 	default:
 		return ""
 	}
+}
+
+// rangeRulefunc 返回对 range 规则的判断
+func rangeRulefunc(key string, value string) string {
+
+	matched := regexp.MustCompile(`(\(|\[)(.+),(.+)(\)|\])`).FindStringSubmatch(value)
+	if len(matched) < 5 {
+		panic(key + "range value 不规范")
+	}
+
+	faultRule := map[string]string{
+		"(": " <= ",
+		"[": " < ",
+		")": " >= ",
+		"]": " > ",
+	}
+
+	v1 := faultRule[matched[1]]
+	v2 := matched[2]
+	v3 := matched[3]
+	v4 := faultRule[matched[4]]
+
+	return key + v1 + v2 + "&&" + key + v4 + v3
 }
 
 // validatefunc 返回 field 校验规则
@@ -230,8 +251,6 @@ func messagefunc(field protogen.Field) (str string) {
 }
 
 func getTemplateInfo(field protogen.Field, r Rule) (s string) {
-	// TODO checkRule 是否有必要 校验该类型是否支持此rule
-
 	ti := TemplateInfo{
 		Field: field,
 		Key:   accessor(field),
@@ -241,7 +260,7 @@ func getTemplateInfo(field protogen.Field, r Rule) (s string) {
 		s = v
 	}
 
-	if field.Desc.IsList() && r.Key != minItemsTyp && r.Key != maxItemsTyp && r.Key != uniqueTpe {
+	if field.Desc.IsList() && r.Key != minItemsTyp && r.Key != maxItemsTyp && r.Key != uniqueTyp {
 		s = `
 			for _, item := range ` + accessor(field) + ` {
 		` + s + `
@@ -293,4 +312,13 @@ func getRules(cs protogen.CommentSet) (rs []Rule) {
 	}
 
 	return
+}
+
+func inKinds(item protoreflect.Kind, items []protoreflect.Kind) bool {
+	for _, v := range items {
+		if v == item {
+			return true
+		}
+	}
+	return false
 }
