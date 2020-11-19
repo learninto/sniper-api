@@ -28,7 +28,7 @@ package user.v0; // 包名，与目录保持一致
 
 // 服务名，只要能定义一个 service
 service Echo {
-  // 服务方法，按需定义，支持注解：@auth 代表需要登录
+  // 服务方法，按需定义
   rpc Hello(HelloRequest) returns (HelloResponse);
 }
 
@@ -46,76 +46,6 @@ message HelloRequest {
   // 如 ids=1,2,3 将会解析为 []int32{1,2,3}
   repeated int32 ids = 3;
 }
-
-// 入参支持规则校验：以下是案例注解
-message RepeatedReq {
-    // @min_items:5
-    // @max_items:10
-    repeated NumericsReq b = 2;
-    // @gt:10
-    // @lt:10
-    repeated float e = 5;
-    // @min_items:3
-    repeated int32 a = 1;
-    // @unique:true
-    repeated int64 d = 4;
-}
-
-message RepeatedReq {
-    // @min_items:5
-    // @max_items:10
-    repeated NumericsReq b = 2;
-    // @gt:10
-    // @lt:10
-    repeated float e = 5;
-    // @min_items:3
-    repeated int32 a = 1;
-    // @unique:true
-    repeated int64 d = 4;
-}
-
-message NumericsReq {
-    // @eq:1.23
-    float a = 1;
-    // @lt:10
-    int32 b = 2;
-    // @gte:20
-    uint64 c = 3;
-    // @gte:20
-    // @lte:40
-    // @in:[1,2,3]
-    fixed32 g = 7;
-    // @in:[1,2,3]
-    uint32 e = 5;
-    // @not_in:[1,2,3]
-    float f = 6;
-}
-
-message StringsReq {
-    // @eq:"foo"
-    string a = 1;
-    // @len:5
-    string b = 2;
-    // @min_len:5
-    string c = 3;
-    // @max_len:5
-    string d = 4;
-    // @pattern:"(?i)^[0-9a-f]+$"
-    string g = 7;
-    // @prefix:"foo"
-    string h = 8;
-    // @suffix:"bar"
-    string i = 9;
-    // @contains:"bar"
-    string j = 10;
-    // @not_contains:"bar"
-    string k = 11;
-    // @in:["foo", "bar", "baz"]
-    string n = 14;
-    // @not_in:["foo", "bar", "baz"]
-    string o = 15;
-}
-
 
 message HelloMessage {
   string message = 1;
@@ -243,6 +173,7 @@ go run cmd/sniper/main.go rpc --server=foo --service=echo
 rpc
 └── foo
     └── v1
+        ├── echo.go
         ├── echo.pb.go
         ├── echo.proto
         └── echo.twirp.go
@@ -251,8 +182,11 @@ rpc
 ## 实现接口
 
 服务接口定义在 rpc 目录对应的 echo.twirp.go 中，是自动生成的。
+
+接口实现代码则会自动生成并保存到 echo.go 中。
+
 ```go
-package user_v0
+package foo_v0
 
 import (
 	// 标准库单列一组
