@@ -50,14 +50,14 @@ func main() {
 	for {
 		select {
 		case <-reload:
-			utils.Reset()
+			goutil.Reset()
 		case sg := <-stop:
 			stopServer()
 			// 仿 nginx 使用 HUP 信号重载配置
 			if sg == syscall.SIGHUP {
 				startServer()
 			} else {
-				utils.Stop()
+				goutil.Stop()
 				return
 			}
 		}
@@ -87,7 +87,7 @@ func startServer() {
 		}
 	}
 
-	panicHandler := utils.PanicHandler{Handler: mux}
+	panicHandler := goutil.PanicHandler{Handler: mux}
 	handler := http.TimeoutHandler(panicHandler, timeout, "timeout")
 	prefix := conf.Get("RPC_PREFIX")
 	if prefix == "" {
@@ -95,8 +95,8 @@ func startServer() {
 	}
 	http.Handle("/", http.StripPrefix(prefix, handler))
 
-	utils.PrometheusHandleFunc("/metrics")
-	utils.Ping("/monitor/ping")
+	goutil.PrometheusHandleFunc("/metrics")
+	goutil.Ping("/monitor/ping")
 
 	addr := fmt.Sprintf(":%d", port)
 	server = &http.Server{IdleTimeout: 60 * time.Second}
@@ -133,5 +133,5 @@ func stopServer() {
 		logger.Fatal(err)
 	}
 
-	utils.Reset()
+	goutil.Reset()
 }

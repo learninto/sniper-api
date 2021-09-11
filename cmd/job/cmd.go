@@ -64,7 +64,7 @@ If you run job cmd WITHOUT any sub cmd, job will be sheduled like cron.`,
 		go func() {
 			metricsHandler := promhttp.Handler()
 			httpD.HandleFunc("/metrics", func(w httpD.ResponseWriter, r *httpD.Request) {
-				utils.GatherMetrics()
+				goutil.GatherMetrics()
 
 				metricsHandler.ServeHTTP(w, r)
 			})
@@ -121,7 +121,7 @@ If you run job cmd WITHOUT any sub cmd, job will be sheduled like cron.`,
 		}()
 
 		go func() {
-			conf.OnConfigChange(func() { utils.Reset() })
+			conf.OnConfigChange(func() { goutil.Reset() })
 			conf.WatchConfig()
 
 			c.Run()
@@ -166,8 +166,8 @@ var cmdList = &cobra.Command{
 }
 
 // once 命令参数，可以在 cron 中使用
-// utils job once foo bar 则 onceArgs = []string{"bar"}
-// utils job once foo 1 2 3 则 onceArgs = []string{"1", "2", "3"}
+// goutil job once foo bar 则 onceArgs = []string{"bar"}
+// goutil job once foo 1 2 3 则 onceArgs = []string{"1", "2", "3"}
 var onceArgs []string
 var onceHttpJob bool
 
