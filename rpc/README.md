@@ -105,7 +105,7 @@ message DownloadMsg {
   - protobuf
 
 最新版的[protobuf-gen-twirp](./cmd/protoc-gen-twirp)生成的 `*.twirp.go` 文件已经
-不再硬编码 `/twirp` 前缀。接口前缀可以通过 `RCP_PREFIX` 配置项控制，默认无前缀。
+不再硬编码 `/twirp` 前缀。接口前缀可以通过 `RPC_PREFIX` 配置项控制，默认前缀为 `/twirp`
 
 表单请求
 ```
@@ -156,10 +156,6 @@ make rpc
 ```
 
 生成的文件中 `*.pb.go` 是由 protobuf 消息的定义代码，同时支持 protobuf 和 json。`*.twirp.go` 则是 rpc 路由相关代码。
-
-## 实现接口
-
-请参考 [server/README.md](../server/README.md)。
 
 ## 自动注册
 
