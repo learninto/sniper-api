@@ -14,14 +14,14 @@ func init() {
 
 // Cmd 脚手架命令
 var Cmd = &cobra.Command{
-	Use:   "utils",
-	Short: "utils 脚手架",
+	Use:   "sniper",
+	Short: "sniper 脚手架",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		_ = cmd.Help()
+		cmd.Help()
 	},
 }
 
 func main() {
-	_ = Cmd.Execute()
+	Cmd.Execute()
 }

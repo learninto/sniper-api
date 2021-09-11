@@ -15,11 +15,11 @@ package {{.Server}}.v{{.Version}};
 service {{.Service}} {
     // FIXME 接口必须写注释
     //
-    // 这里的行尾注释 utils:foo 有特殊含义，是可选的
+    // 这里的行尾注释 sniper:foo 有特殊含义，是可选的
     // 框架会将此处冒号后面的值(foo)注入到 ctx 中，
     // 用户可以使用 twirp.MethodOption(ctx) 查询，并执行不同的逻辑
-    // 这个 utils 前缀可以通过 --twirp_out=option_prefix=utils:. 自定义
-    rpc Echo({{.Service}}EchoReq) returns ({{.Service}}EchoResp); // utils:foo
+    // 这个 sniper 前缀可以通过 --twirp_out=option_prefix=sniper:. 自定义
+    rpc Echo({{.Service}}EchoReq) returns ({{.Service}}EchoResp); // sniper:foo
 }
 
 message {{.Service}}EchoReq {
