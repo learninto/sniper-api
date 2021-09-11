@@ -109,7 +109,7 @@ protoc-gen-markdown 也不完美。它无法正确处理 proto 中的 map 消息
 好在是适配了 opentracing，大家可以很方便的集成 jaeger 等组件。
 
 ## 基础组件
-主要的基础组件有三个，分别是 HTTP 客户端、mysql 客户端、[memcache 客户端](https://github.com/bilibili/memcache)。[redis 客户端](https://github.com/bilibili/redis)是后来加入的，现在还没在业务中使用。
+主要的基础组件有三个，分别是 HTTP 客户端、mysql 客户端、[memcache 客户端](https://github.com/go-kiss/memcache)。[redis 客户端](https://github.com/bilibili/redis)是后来加入的，现在还没在业务中使用。
 
 基础组件提供统一封装，主要解决以下问题：
 - 加载配置

@@ -43,7 +43,7 @@ find rpc -name '*.proto' -exec protoc --markdown_out=. --go_out=. {} \;
 ## 快速入门
 
 - [定义接口](./rpc/README.md)
-- [实现接口](./server/README.md)
+- [实现接口](./rpc/README.md)
 - [注册服务](./cmd/server/README.md)
 - [启动服务](./cmd/server/README.md)
 - [配置文件](https://github.com/learninto/goutil/conf/README.md)
