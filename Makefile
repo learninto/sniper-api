@@ -52,8 +52,7 @@ util: $(LIB_PBGENS)
 	@exit
 
 cmd:
-	#go install ./cmd/protoc-gen-twirp
-	GO111MODULE=on GOPROXY=https://goproxy.cn/,direct go get -u github.com/learninto/sniper-api/cmd/protoc-gen-twirp@latest
+	go install ./cmd/protoc-gen-twirp
 
 clean:
 	git clean -x -f -d
