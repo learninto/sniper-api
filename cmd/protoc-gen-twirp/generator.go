@@ -198,7 +198,7 @@ func (t *twirp) generateImports(file *protogen.File) {
 	t.P(`import `, t.pkgs["http"], ` "net/http"`)
 	t.P()
 	t.P(`import `, t.pkgs["protojson"], ` "google.golang.org/protobuf/encoding/protojson"`)
-	t.P(`import `, t.pkgs["proto"], ` "github.com/golang/protobuf/proto"`)
+	t.P(`import `, t.pkgs["proto"], ` "google.golang.org/protobuf/proto"`)
 	//t.P(`import `, t.pkgs["ctxkit"], fmt.Sprintf(` "%s/util/ctxkit"`, t.RootPackage))
 	//t.P(`import `, t.pkgs["twirp"], fmt.Sprintf(` "%s/util/twirp"`, t.RootPackage))
 	t.P(`import `, t.pkgs["ctxkit"], ` "github.com/learninto/goutil/ctxkit"`)
