@@ -11,7 +11,7 @@ import (
 var TraceID = &twirp.ServerHooks{
 	RequestReceived: func(ctx context.Context) (context.Context, error) {
 		traceID := trace.GetTraceID(ctx)
-		twirp.SetHTTPResponseHeader(ctx, "x-trace-id", traceID)
+		_ = twirp.SetHTTPResponseHeader(ctx, "x-trace-id", traceID)
 
 		return ctx, nil
 	},

@@ -12,6 +12,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"github.com/learninto/goutil"
 	"github.com/learninto/goutil/conf"
 	"github.com/learninto/goutil/log"
@@ -111,14 +113,16 @@ func startServer() {
 
 	panicHandler := goutil.PanicHandler{Handler: mux}
 	handler := http.TimeoutHandler(panicHandler, timeout, "timeout")
-	prefix := conf.Get("RPC_PREFIX")
-	if prefix == "" {
-		prefix = "/api"
-	}
-	http.Handle("/", http.StripPrefix(prefix, handler))
 
-	goutil.PrometheusHandleFunc("/metrics")
-	goutil.Ping("/monitor/ping")
+	if prefix := conf.Get("RPC_PREFIX"); prefix != "" && prefix != "/" {
+		handler = http.StripPrefix(prefix, handler)
+	}
+
+	http.Handle("/", handler)
+	http.Handle("/metrics", promhttp.Handler())
+	http.HandleFunc("/monitor/ping", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("pong"))
+	})
 
 	addr := fmt.Sprintf(":%d", port)
 	server = &http.Server{IdleTimeout: 60 * time.Second}
