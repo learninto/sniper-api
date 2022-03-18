@@ -1,4 +1,4 @@
-package server
+package http
 
 import (
 	"context"
@@ -15,7 +15,29 @@ import (
 	"github.com/learninto/goutil"
 	"github.com/learninto/goutil/conf"
 	"github.com/learninto/goutil/log"
+
+	"github.com/spf13/cobra"
 )
+
+var port int
+var isInternal bool
+var isManage bool
+
+// Cmd run http http
+var Cmd = &cobra.Command{
+	Use:   "http",
+	Short: "Run http",
+	Long:  `Run http`,
+	Run: func(cmd *cobra.Command, args []string) {
+		main()
+	},
+}
+
+func init() {
+	Cmd.Flags().IntVar(&port, "port", 8080, "listen port")
+	Cmd.Flags().BoolVar(&isInternal, "internal", false, "internal service")
+	Cmd.Flags().BoolVar(&isManage, "manage", false, "manage service")
+}
 
 var (
 	server *http.Server
@@ -66,7 +88,7 @@ func main() {
 
 // startServer
 func startServer() {
-	logger.Info("start server")
+	logger.Info("start http")
 
 	rand.Seed(int64(time.Now().Nanosecond()))
 
@@ -124,7 +146,7 @@ func startServer() {
 
 // stopServer
 func stopServer() {
-	logger.Info("stop server")
+	logger.Info("stop http")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()

@@ -21,7 +21,7 @@ package {{.Server}}_v{{.Version}}
 import (
 	"context"
 
-	"github.com/learninto/sniper-api/pkg/twirp"
+	"github.com/learninto/goutil/twirp"
 )
 
 type {{.Service}}Server struct{}

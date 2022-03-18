@@ -59,10 +59,10 @@ doc:
 	find rpc -name '*.proto' -exec protoc --markdown_out=. --go_out=. {} \;
 
 run-public:
-	export APP_ID=SniperApi;	export DEPLOY_ENV=uat;	go run main.go server --port=8080;
+	export APP_ID=SniperApi;	export DEPLOY_ENV=uat;	go run main.go http --port=8080;
 
 run-private:
-	export APP_ID=SniperInternalApi; go run main.go server --port=8080 --internal;
+	export APP_ID=SniperInternalApi; go run main.go http --port=8080 --internal;
 
 run-job:
 	export APP_ID=SniperJob; go run main.go job --port=8081;

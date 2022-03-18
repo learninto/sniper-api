@@ -1,7 +1,7 @@
 # 全局日志级别
 LOG_LEVEL = "debug"
 
-RPC_PREFIX="/twirp"
+RPC_PREFIX="/api"
 
 # DB 配置，格式为 DB_${NAME}_DSN，内容参考
 # https://github.com/go-sql-driver/mysql#dsn-data-source-name
