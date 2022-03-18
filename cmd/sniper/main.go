@@ -53,5 +53,5 @@ func init() {
 func main() {
 	Cmd.AddCommand(rpc.Cmd)
 	Cmd.AddCommand(new.Cmd)
-	Cmd.Execute()
+	_ = Cmd.Execute()
 }
