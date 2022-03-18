@@ -1,88 +1,110 @@
 package rpc
 
-var serverTpl = `
-package {{.ServerPkg}}
-
 import (
-	"context"
-
-	pb "{{.RPCPkg}}"
+	"strings"
 )
 
-type {{.Service}}Server struct{}
-`
-
-var funcTpl = `
-func (s *{{.Service}}Server) {{.Name}}(ctx context.Context, req *pb.{{.ReqType}}) (resp *pb.{{.RespType}}, err error) {
-	// FIXME 请开始你的表演
-	return
+type tpl interface {
+	tpl() string
 }
-`
 
-var echoFuncTpl = `
-func (s *{{.Service}}Server) Echo(ctx context.Context, req *pb.{{.Service}}EchoReq) (resp *pb.{{.Service}}EchoResp, err error) {
-	return &pb.{{.Service}}EchoResp{Msg: req.Msg}, nil
+type srvTpl struct {
+	Server  string // 服务
+	Version string // 版本
+	Service string // 子服务
 }
-`
 
-var regServerTpl = `
-package main
-func main() {
-	{
-		server := &{{.Server}}server{{.Version}}.{{.Service}}Server{}
-		handler := {{.Server}}_v{{.Version}}.New{{.Service}}Server(server, hooks)
-		mux.Handle({{.Server}}_v{{.Version}}.{{.Service}}PathPrefix, handler)
-	}
-}
-`
-
-var importTpl = `
-package main
-import(
-	{{.PKGName}} {{.RPCPath}}
-	{{.ServerPath}}
-)
-`
-
-func initNewTpl() {
-	serverTpl = `
+func (t *srvTpl) tpl() string {
+	return strings.TrimLeft(`
 package {{.Server}}_v{{.Version}}
 
 import (
 	"context"
+
+	"github.com/learninto/sniper-api/pkg/twirp"
 )
 
 type {{.Service}}Server struct{}
-`
 
-	funcTpl = `
+// Hooks 返回 server 和 method 对应的 hooks
+// 如果设定了 method 的 hooks，则不再执行 server 一级的 hooks
+func (s *{{.Service}}Server) Hooks() map[string]*twirp.ServerHooks {
+	return map[string]*twirp.ServerHooks {
+		// "": nil, // Server 一级 hooks
+		// "Echo": nil, // Echo 方法的 hooks
+	}
+}
+`, "\n")
+}
+
+type funcTpl struct {
+	Service  string // 服务名
+	Name     string // 函数名
+	ReqType  string // 请求消息类型
+	RespType string // 返回消息类型
+}
+
+func (t *funcTpl) tpl() string {
+	return `
 func (s *{{.Service}}Server) {{.Name}}(ctx context.Context, req *{{.ReqType}}) (resp *{{.RespType}}, err error) {
+	{{if eq .Name  "Echo"}}
+	return &{{.Service}}EchoResp{Msg: req.Msg}, nil
+	{{else}}
 	// FIXME 请开始你的表演
 	return
+	{{end}}
 }
 `
-
-	echoFuncTpl = `
-func (s *{{.Service}}Server) Echo(ctx context.Context, req *{{.Service}}EchoReq) (resp *{{.Service}}EchoResp, err error) {
-	return &{{.Service}}EchoResp{Msg: req.Msg}, nil
 }
-`
 
-	regServerTpl = `
+type regSrvTpl struct {
+	Package string // 包名
+	Server  string // 服务
+	Version string // 版本
+	Service string // 子服务
+}
+
+func (t *regSrvTpl) tpl() string {
+	return strings.TrimLeft(`
 package main
+import {{.Server}}_v{{.Version}} "{{.Package}}/rpc/{{.Server}}/v{{.Version}}"
 func main() {
 	{
-		server := &{{.Server}}_v{{.Version}}.{{.Service}}Server{}
-		handler := {{.Server}}_v{{.Version}}.New{{.Service}}Server(server, hooks)
+		s := &{{.Server}}_v{{.Version}}.{{.Service}}Server{}
+		hooks := twirp.ChainHooks(commonHooks, hooks.ServerHooks(s))
+		handler := {{.Server}}_v{{.Version}}.New{{.Service}}Server(s,hooks)
 		mux.Handle({{.Server}}_v{{.Version}}.{{.Service}}PathPrefix, handler)
 	}
 }
-`
+`, "\n")
+}
 
-	importTpl = `
-package main
-import(
-	{{.PKGName}} {{.RPCPath}}
-)
-`
+type protoTpl struct {
+	Server  string // 服务
+	Version string // 版本
+	Service string // 子服务
+}
+
+func (t *protoTpl) tpl() string {
+	return strings.TrimLeft(`
+syntax = "proto3";
+
+package {{.Server}}.v{{.Version}};
+
+// FIXME 服务必须写注释
+service {{.Service}} {
+    // FIXME 接口必须写注释
+    rpc Echo({{.Service}}EchoReq) returns ({{.Service}}EchoResp);
+}
+
+message {{.Service}}EchoReq {
+    // FIXME 请求字段必须写注释
+    string msg = 1;
+}
+
+message {{.Service}}EchoResp {
+    // FIXME 响应字段必须写注释
+    string msg = 1;
+}
+`, "\n")
 }

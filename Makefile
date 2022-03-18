@@ -2,12 +2,12 @@
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
 RPC_PROTOS := $(call rwildcard,rpc/,*.proto)
-LIB_PROTOS := $(call rwildcard,util/,*.proto)
+PKG_PROTOS := $(call rwildcard,pkg/,*.proto)
 
 RPC_PBGENS := $(RPC_PROTOS:.proto=.twirp.go)
-LIB_PBGENS := $(LIB_PROTOS:.proto=.pb.go)
+PKG_PBGENS := $(PKG_PROTOS:.proto=.pb.go)
 
-.PRECIOUS: $(RPC_PBGENS) $(LIB_PBGENS)
+.PRECIOUS: $(RPC_PBGENS) $(PKG_PBGENS)
 
 # 参数 Mfoo.proto=bar/foo 表示 foo.proto 生成的 go 文件所对应的包名是 bar/foo。
 #
@@ -21,7 +21,7 @@ LIB_PBGENS := $(LIB_PROTOS:.proto=.pb.go)
 # https://github.com/golang/protobuf/issues/1158#issuecomment-650694184
 #
 # $(...) 中的神奇代码是为实现以下替换
-# util/kv/taishan/taishan.proto => sniper/util/taishan
+# pkg/kv/taishan/taishan.proto => sniper/pkg/taishan
 %.pb.go: %.proto
 	protoc --go_out=M$<=$(patsubst %/,%,$(dir $<)):. $<
 
@@ -38,27 +38,22 @@ LIB_PBGENS := $(LIB_PROTOS:.proto=.pb.go)
 				)\
 			)\
 		))
-	protoc --twirp_out=root_package=sniper,validate_enable=true,M$m:. \
+	protoc --plugin=protoc-gen-twirp=$(shell which sniper) \
+		--twirp_out=M$m:. \
 		--go_out=M$m:. \
 		$<
 
-default: rpc util
+default: rpc pkg
 	go build -trimpath -mod=readonly
 
 rpc: $(RPC_PBGENS)
 	@exit
 
-util: $(LIB_PBGENS)
+pkg: $(PKG_PBGENS)
 	@exit
-
-cmd:
-	go install ./cmd/protoc-gen-twirp
 
 clean:
 	git clean -x -f -d
-
-rename:
-	go run cmd/sniper/main.go rename  --package $(name)
 
 doc:
 	find rpc -name '*.proto' -exec protoc --markdown_out=. --go_out=. {} \;
@@ -71,5 +66,4 @@ run-private:
 
 run-job:
 	export APP_ID=SniperJob; go run main.go job --port=8081;
-
-.PHONY: clean rpc util cmd
+.PHONY: clean rpc pkg
