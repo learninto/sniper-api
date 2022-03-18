@@ -1,19 +1,20 @@
 package main
 
 import (
+	"github.com/learninto/goutil/conf"
+	"github.com/learninto/sniper-api/cmd/cron"
 	"github.com/learninto/sniper-api/cmd/http"
-	"github.com/learninto/sniper-api/cmd/job"
 	_ "github.com/learninto/sniper-api/init"
 
 	"github.com/spf13/cobra"
 )
 
 func main() {
-	root := cobra.Command{Use: "sniper-api"}
+	root := cobra.Command{Use: conf.AppID}
 
 	root.AddCommand(
 		http.Cmd,
-		job.Cmd,
+		cron.Cmd,
 	)
 
 	_ = root.Execute()
