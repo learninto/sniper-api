@@ -15,7 +15,7 @@ func init() {
 	Cmd.Flags().StringVar(&pkg, "pkg", "", "项目包名")
 	Cmd.Flags().StringVar(&branch, "branch", "master", "项目模板分支")
 
-	_ = Cmd.MarkFlagRequired("pkg")
+	Cmd.MarkFlagRequired("pkg")
 }
 
 // Cmd 项目初始化工具
