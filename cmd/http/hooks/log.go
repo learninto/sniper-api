@@ -2,9 +2,13 @@ package hooks
 
 import (
 	"context"
+	"time"
+
+	"github.com/learninto/goutil/conf"
+	"github.com/learninto/goutil/ctxkit"
+	"github.com/learninto/goutil/metrics"
 
 	"github.com/learninto/goutil/log"
-	"github.com/learninto/goutil/trace"
 	"github.com/learninto/goutil/twirp"
 	"github.com/opentracing/opentracing-go"
 )
@@ -15,7 +19,19 @@ type bizResponse interface {
 }
 
 var Log = &twirp.ServerHooks{
+	ResponsePrepared: func(ctx context.Context) context.Context {
+		span, ctx := opentracing.StartSpanFromContext(ctx, "SendResp")
+		ctx = context.WithValue(ctx, sendRespKey, span)
+		return ctx
+	},
 	ResponseSent: func(ctx context.Context) {
+		if span, ok := ctx.Value(sendRespKey).(opentracing.Span); ok {
+			defer span.Finish()
+		}
+
+		span, ctx := opentracing.StartSpanFromContext(ctx, "LogReq")
+		defer span.Finish()
+
 		var bizCode int32
 		var bizMsg string
 		resp, _ := twirp.Response(ctx)
@@ -24,8 +40,8 @@ var Log = &twirp.ServerHooks{
 			bizMsg = br.GetMsg()
 		}
 
-		span := opentracing.SpanFromContext(ctx)
-		duration := trace.GetDuration(span)
+		start := ctx.Value(ctxkit.StartTimeKey).(time.Time)
+		duration := time.Since(start)
 
 		status, _ := twirp.StatusCode(ctx)
 		if _, ok := ctx.Deadline(); ok {
@@ -40,7 +56,7 @@ var Log = &twirp.ServerHooks{
 		// 外部爬接口脚本会请求任意 API
 		// 导致 prometheus 无法展示数据
 		if status != "404" {
-			rpcDurations.WithLabelValues(
+			metrics.RPCDurationsSeconds.WithLabelValues(
 				path,
 				status,
 			).Observe(duration.Seconds())
@@ -51,9 +67,14 @@ var Log = &twirp.ServerHooks{
 		if len(form) == 0 {
 			form = hreq.URL.Query()
 		}
+		// 移除日志中的敏感信息
+		if conf.IsProdEnv {
+			form.Del("access_key")
+			form.Del("appkey")
+			form.Del("sign")
+		}
 
 		log.Get(ctx).WithFields(log.Fields{
-			"ip":       hreq.RemoteAddr,
 			"path":     path,
 			"status":   status,
 			"params":   form.Encode(),
@@ -66,11 +87,23 @@ var Log = &twirp.ServerHooks{
 		c := twirp.ServerHTTPStatusFromErrorCode(err.Code())
 
 		if c >= 500 {
-			log.Get(ctx).Errorf("%+v", err)
+			log.Get(ctx).Errorf("%+v", cause(err))
 		} else if c >= 400 {
 			log.Get(ctx).Warn(err)
 		}
 
 		return ctx
 	},
+}
+
+func cause(err twirp.Error) error {
+	// https://github.com/pkg/errors#retrieving-the-cause-of-an-error
+	type causer interface {
+		Cause() error
+	}
+	if c, ok := err.(causer); ok {
+		return c.Cause()
+	}
+
+	return err
 }
