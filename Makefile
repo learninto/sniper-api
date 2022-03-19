@@ -65,5 +65,5 @@ run-private:
 	export APP_ID=SniperInternalApi; go run main.go http --port=8080 --internal;
 
 run-job:
-	export APP_ID=SniperJob; go run main.go job --port=8081;
+	export APP_ID=SniperJob; go run main.go cron --port=8081;
 .PHONY: clean rpc pkg
