@@ -6,8 +6,6 @@ import (
 
 	"github.com/learninto/goutil/conf"
 	"github.com/learninto/goutil/ctxkit"
-	"github.com/learninto/goutil/metrics"
-
 	"github.com/learninto/goutil/log"
 	"github.com/learninto/goutil/twirp"
 	"github.com/opentracing/opentracing-go"
@@ -56,7 +54,7 @@ var Log = &twirp.ServerHooks{
 		// 外部爬接口脚本会请求任意 API
 		// 导致 prometheus 无法展示数据
 		if status != "404" {
-			metrics.RPCDurationsSeconds.WithLabelValues(
+			RPCDurationsSeconds.WithLabelValues(
 				path,
 				status,
 			).Observe(duration.Seconds())

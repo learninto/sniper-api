@@ -14,14 +14,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/learninto/goutil"
-
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/learninto/goutil/conf"
 	"github.com/learninto/goutil/ctxkit"
 	"github.com/learninto/goutil/log"
-	"github.com/learninto/goutil/metrics"
 	"github.com/learninto/goutil/trace"
 
 	"github.com/learninto/goutil/crond"
@@ -54,20 +51,15 @@ func init() {
 
 // Cmd run job once or periodically
 var Cmd = &cobra.Command{
-	Use:   "job",
-	Short: "Run job",
+	Use:   "cron",
+	Short: "Run cron job",
 	Long: `You can list all jobs and run certain one once.
 If you run job cmd WITHOUT any sub cmd, job will be sheduled like cron.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// 不指定 handler 则会使用默认 handler
 		server := &httpD.Server{Addr: fmt.Sprintf(":%d", port)}
 		go func() {
-			metricsHandler := promhttp.Handler()
-			httpD.HandleFunc("/metrics", func(w httpD.ResponseWriter, r *httpD.Request) {
-				goutil.GatherMetrics()
-
-				metricsHandler.ServeHTTP(w, r)
-			})
+			httpD.Handle("/metrics", promhttp.Handler())
 
 			httpD.HandleFunc("/ListTasks", func(w httpD.ResponseWriter, r *httpD.Request) {
 				ctx := context.Background()
@@ -80,11 +72,11 @@ If you run job cmd WITHOUT any sub cmd, job will be sheduled like cron.`,
 				buf, err := json.Marshal(httpJobs)
 				if err != nil {
 					w.WriteHeader(httpD.StatusInternalServerError)
-					_, _ = w.Write([]byte(err.Error()))
+					w.Write([]byte(err.Error()))
 					return
 				}
 
-				_, _ = w.Write(buf)
+				w.Write(buf)
 			})
 
 			httpD.HandleFunc("/RunTask", func(w httpD.ResponseWriter, r *httpD.Request) {
@@ -98,21 +90,21 @@ If you run job cmd WITHOUT any sub cmd, job will be sheduled like cron.`,
 				job, ok := httpJobs[name]
 				if !ok {
 					w.WriteHeader(httpD.StatusNotFound)
-					_, _ = w.Write([]byte("job " + name + " not found\n"))
+					w.Write([]byte("job " + name + " not found\n"))
 					return
 				}
 
 				if err := job.job(ctx); err != nil {
 					w.WriteHeader(httpD.StatusInternalServerError)
-					_, _ = w.Write([]byte(fmt.Sprintf("%+v", err)))
+					w.Write([]byte(fmt.Sprintf("%+v", err)))
 					return
 				}
 
-				_, _ = w.Write([]byte("run job " + name + " done\n"))
+				w.Write([]byte("run job " + name + " done\n"))
 			})
 
 			httpD.HandleFunc("/monitor/ping", func(w httpD.ResponseWriter, r *httpD.Request) {
-				_, _ = w.Write([]byte("pong"))
+				w.Write([]byte("pong"))
 			})
 
 			if err := server.ListenAndServe(); err != nil {
@@ -121,7 +113,7 @@ If you run job cmd WITHOUT any sub cmd, job will be sheduled like cron.`,
 		}()
 
 		go func() {
-			conf.OnConfigChange(func() { goutil.Reset() })
+			conf.OnConfigChange(func() { Reset() })
 			conf.WatchConfig()
 
 			c.Run()
@@ -153,8 +145,8 @@ If you run job cmd WITHOUT any sub cmd, job will be sheduled like cron.`,
 
 var cmdList = &cobra.Command{
 	Use:   "list",
-	Short: "List all jobs",
-	Long:  `List all jobs.`,
+	Short: "List all cron jobs",
+	Long:  `List all cron jobs.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		for k, v := range jobs {
 			fmt.Printf("%s [%s]\n", k, v.Spec)
@@ -166,8 +158,8 @@ var cmdList = &cobra.Command{
 }
 
 // once 命令参数，可以在 cron 中使用
-// goutil job once foo bar 则 onceArgs = []string{"bar"}
-// goutil job once foo 1 2 3 则 onceArgs = []string{"1", "2", "3"}
+// sniper cron once foo bar 则 onceArgs = []string{"bar"}
+// sniper cron once foo 1 2 3 则 onceArgs = []string{"1", "2", "3"}
 var onceArgs []string
 var onceHttpJob bool
 
@@ -186,7 +178,7 @@ var cmdOnce = &cobra.Command{
 			job = jobs[name]
 		}
 		if job != nil {
-			_ = job.job(context.Background())
+			job.job(context.Background())
 		}
 	},
 }
@@ -226,7 +218,7 @@ func http(name string, spec string, job func(ctx context.Context) error, args ..
 	return
 }
 
-// sepc 参数请参考 https://godoc.org/github.com/robfig/cron
+// sepc 参数请参考 https://pkg.go.dev/github.com/robfig/cron/v3
 func cron(name string, spec string, job func(ctx context.Context) error) {
 	if _, ok := jobs[name]; ok {
 		panic(name + " is used")
@@ -239,7 +231,7 @@ func cron(name string, spec string, job func(ctx context.Context) error) {
 		return
 	}
 
-	if err := c.AddJob(spec, j); err != nil {
+	if _, err := c.AddJob(spec, j); err != nil {
 		panic(err)
 	}
 }
@@ -278,7 +270,7 @@ func regjob(name string, spec string, job func(ctx context.Context) error, tasks
 		}
 		d := time.Since(t)
 
-		metrics.JobTotal.WithLabelValues(code).Inc()
+		JobTotal.WithLabelValues(code).Inc()
 
 		logger.WithField("cost", d.Seconds()).Infof("cron job %s[%s]", name, spec)
 		return
@@ -288,7 +280,7 @@ func regjob(name string, spec string, job func(ctx context.Context) error, tasks
 	return
 }
 
-// 已废弃，请使用 cron 或 manual
-func addJob(name string, spec string, job func(ctx context.Context) error) {
-	cron(name, spec, job)
+// Reset all utils
+func Reset() {
+	log.Reset()
 }

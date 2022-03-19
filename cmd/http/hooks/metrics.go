@@ -78,6 +78,14 @@ var NetPoolIdle = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 	ConstLabels: map[string]string{"app": conf.AppID},
 }, []string{"name", "type"})
 
+var RPCDurationsSeconds = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+	Namespace:   conf.AppID,
+	Name:        "rpc_durations_seconds",
+	Help:        "RPC latency distributions",
+	Buckets:     defBuckets,
+	ConstLabels: map[string]string{"app": conf.AppID},
+}, []string{"path", "code"})
+
 func init() {
 	prometheus.MustRegister(rpcDurations)
 	prometheus.MustRegister(LogTotal)
@@ -89,4 +97,5 @@ func init() {
 	prometheus.MustRegister(NetPoolStale)
 	prometheus.MustRegister(NetPoolTotal)
 	prometheus.MustRegister(NetPoolIdle)
+	prometheus.MustRegister(RPCDurationsSeconds)
 }

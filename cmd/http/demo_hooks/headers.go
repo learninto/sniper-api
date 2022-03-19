@@ -11,7 +11,7 @@ import (
 	"github.com/learninto/goutil/ctxkit"
 	"github.com/learninto/goutil/jwtx"
 	"github.com/learninto/goutil/log"
-	"github.com/learninto/goutil/redis"
+	"github.com/learninto/goutil/memdb"
 	"github.com/learninto/goutil/twirp"
 	"github.com/learninto/goutil/xhttp"
 )
@@ -149,9 +149,11 @@ func NewHeaders() *twirp.ServerHooks {
 }
 
 func queryUserInfo(ctx context.Context, sign string) (b []byte, err error) {
-	userBody, _ := redis.Get(ctx, "default").Get(ctx, sign)
-	if userBody != nil && userBody.Value != nil {
-		return userBody.Value, nil
+	ctx, db := memdb.Get(ctx, "default")
+
+	userBody, err := db.Get(ctx, sign).Bytes()
+	if userBody != nil && err != nil {
+		return userBody, nil
 	}
 
 	timeout := 2 * time.Second
@@ -171,6 +173,9 @@ func queryUserInfo(ctx context.Context, sign string) (b []byte, err error) {
 		return
 	}
 
-	userBody, _ = redis.Get(ctx, "default").Get(ctx, sign)
-	return userBody.Value, nil
+	//userBody, _ = redis.Get(ctx, "default").Get(ctx, sign)
+	//return userBody.Value, nil
+
+	userBody, err = db.Get(ctx, sign).Bytes()
+	return
 }
