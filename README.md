@@ -17,7 +17,6 @@ Sniper 仅支持 UNIX 环境。Windows 用户需要在 WSL 下使用。
 
 ```bash
 go install github.com/learninto/sniper-api/cmd/sniper@latest
-go install github.com/learninto/sniper-api/cmd/sniper@feat-cli
 ```
 
 创建一个新项目：
