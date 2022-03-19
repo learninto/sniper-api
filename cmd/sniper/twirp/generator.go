@@ -197,7 +197,8 @@ func (t *twirp) generateImports(file *protogen.File) {
 	t.P()
 	t.P(`import `, t.pkgs["protojson"], ` "google.golang.org/protobuf/encoding/protojson"`)
 	t.P(`import `, t.pkgs["proto"], ` "google.golang.org/protobuf/proto"`)
-	t.P(`import `, t.pkgs["twirp"], fmt.Sprintf(` "%s/pkg/twirp"`, t.RootPackage))
+	//t.P(`import `, t.pkgs["twirp"], fmt.Sprintf(` "%s/pkg/twirp"`, t.RootPackage))
+	t.P(`import `, t.pkgs["twirp"], ` "github.com/learninto/goutil/twirp"`)
 	t.P()
 
 	// It's legal to import a message and use it as an input or output for a
